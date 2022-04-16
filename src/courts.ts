@@ -29,7 +29,13 @@ const fetchSites = async (headers: Record<string, string>) => {
 const fetchCourts = async (headers: Record<string, string>) => {
   const { sites, userId } = await fetchSites(headers);
   // avoid rate limiting with reduce
-  const siteBySiteInfo = await sites.reduce(async (acc, { id: siteId }) => {
+  const siteBySiteInfo: {
+    name: string,
+    items: {
+      resourceId: number, name: string,
+    }[],
+    siteId: number,
+  }[] = await sites.reduce(async (acc, { id: siteId }) => {
     const resp = await fetch(COURT_LIST_ENDPOINT({ siteId, userId }), {
       headers,
       body: null,
@@ -52,7 +58,7 @@ const fetchCourts = async (headers: Record<string, string>) => {
       }
     ];
   }, Promise.resolve([]));
-  console.log(JSON.stringify(siteBySiteInfo, null, 4));
+  return { courts: siteBySiteInfo, userId };
 }
 
 export default fetchCourts;

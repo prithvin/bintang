@@ -49,7 +49,9 @@ const fetchAuthHeader = async () => {
     throw new Error('Invalid iframe. Website probably reformatted');
   }
   // need to navigate to iframe url directly in order to intercept requests
-  return navigateToBukza({ browser, bukzaFrameURL });
+  const headers = await navigateToBukza({ browser, bukzaFrameURL });
+  await browser.deleteSession()
+  return headers;
 }
 
 export default fetchAuthHeader;
