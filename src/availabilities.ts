@@ -53,8 +53,8 @@ const fetchAvailabilities = async ({ targetDate, courts, headers, userId }: {
       blocks: _.head(days).levels
         .filter(({ shares }) => (shares > 0 ))
         .map(({ startDate, endDate }) => ({
-          startDate: moment(startDate).format('MM/DD hh:mm'),
-          endDate: moment(endDate).format('MM/DD hh:mm'),
+          startDate: moment(startDate).format('h:mm A'),
+          endDate: moment(endDate).format('h:mm A'),
         })),
     }))
     .filter(({ blocks }) => blocks.length > 0);

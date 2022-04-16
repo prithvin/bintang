@@ -12,7 +12,7 @@ const fetchSites = async (headers: Record<string, string>) => {
     body: null,
     method: 'GET',
   });
-  const { items, account: { userId } }: {
+  const { items, account: { userId }, timetable: { resourceGroupId: timeTableId } }: {
     account: { userId: number },
     timetable: { id: number, resourceGroupId: number },
     items: {
@@ -23,11 +23,12 @@ const fetchSites = async (headers: Record<string, string>) => {
   return {
     sites: items.map(({ name, resourceGroupId: id }) => ({ name, id })),
     userId,
+    timeTableId,
   };
 };
 
 const fetchCourts = async (headers: Record<string, string>) => {
-  const { sites, userId } = await fetchSites(headers);
+  const { sites, userId, timeTableId } = await fetchSites(headers);
   // avoid rate limiting with reduce
   const siteBySiteInfo: {
     name: string,
@@ -58,7 +59,7 @@ const fetchCourts = async (headers: Record<string, string>) => {
       }
     ];
   }, Promise.resolve([]));
-  return { courts: siteBySiteInfo, userId };
+  return { courts: siteBySiteInfo, userId, timeTableId };
 }
 
 export default fetchCourts;

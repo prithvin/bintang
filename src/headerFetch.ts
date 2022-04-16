@@ -26,7 +26,9 @@ const navigateToBukza = async ({ bukzaFrameURL, browser }: {
         console.log(`Authorization headers found for ${url}`);
         // https://stackoverflow.com/questions/4950115/removeeventlistener-on-anonymous-functions-in-javascript
         page.off('request', handler);
+        page.setRequestInterception(false)
         resolve((headers));
+        return;
       }
       request.continue();
     });
@@ -52,6 +54,8 @@ const fetchAuthHeader = async () => {
   // need to navigate to iframe url directly in order to intercept requests
   const headers = await navigateToBukza({ browser, bukzaFrameURL });
   console.log(`Captured headers: ${JSON.stringify(headers)}`)
+  await browser.closeWindow();
+  await browser.deleteSession();
   return headers;
 }
 
