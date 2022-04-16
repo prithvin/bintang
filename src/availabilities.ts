@@ -4,9 +4,10 @@ import moment from 'moment';
 import { generatePostRequestHeaders } from './apiHelper';
 
 
-const fetchAvailabilities = async ({ courts, headers, userId }: {
+const fetchAvailabilities = async ({ targetDate, courts, headers, userId }: {
   headers: Record<string, string>,
   userId: number,
+  targetDate: Date,
   courts: {
     name: string,
     items: {
@@ -18,13 +19,13 @@ const fetchAvailabilities = async ({ courts, headers, userId }: {
   resourceId: number,
   blocks: { startDate: string, endDate: string }[],
 }[]> => {
-  const targetDate = moment().startOf('day').toDate().toISOString()
+  const bukzaStartDate = moment(targetDate).startOf('day').toDate().toISOString()
   const availabities = await fetch(`https://app.bukza.com/api/clientReservations/getAvailability/${userId}?t=${new Date().getTime()}`, {
     ...generatePostRequestHeaders(headers),
     body: JSON.stringify({
       reservationId: null,
       resourceIds: _.flatten(courts.map(({ items }) => items.map(({ resourceId }) => resourceId))),
-      date: targetDate,
+      date: bukzaStartDate,
       includeWorkRuleNames: false,
       includeHours: false,
       dayCount: 1,
@@ -39,7 +40,7 @@ const fetchAvailabilities = async ({ courts, headers, userId }: {
         levels: {
           shares: number,
           value: number,
-          total: number, // if there is availability, total - shares > 0
+          total: number, // if there is availability, shares > 0
           startDate: string,
           endDate: string,
         }[],
@@ -50,8 +51,11 @@ const fetchAvailabilities = async ({ courts, headers, userId }: {
     .map(({ resourceId, days }) => ({
       resourceId,
       blocks: _.head(days).levels
-        .filter(({ total, shares }) => (total - shares > 0 ))
-        .map(({ startDate, endDate }) => ({ startDate, endDate })),
+        .filter(({ shares }) => (shares > 0 ))
+        .map(({ startDate, endDate }) => ({
+          startDate: moment(startDate).format('MM/DD hh:mm'),
+          endDate: moment(endDate).format('MM/DD hh:mm'),
+        })),
     }))
     .filter(({ blocks }) => blocks.length > 0);
   return availableBlocks;
