@@ -1,5 +1,9 @@
 # Source: https://github.com/github/gitignore/blob/main/Node.gitignore
 
+# Ignore fixtures in frontend folder
+# git update-index --assume-unchanged frontend/pages/availabilities.json
+# git update-index --assume-unchanged frontend/pages/server.json
+
 # Logs
 logs
 *.log
