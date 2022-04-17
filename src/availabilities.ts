@@ -15,10 +15,7 @@ const fetchAvailabilities = async ({ targetDate, courts, headers, userId }: {
     }[],
     siteId: number,
   }[],
-}): Promise<{
-  resourceId: number,
-  blocks: { startDate: string, endDate: string }[],
-}[]> => {
+}): Promise<{ resourceId: string, startDate: string, endDate: string }[]> => {
   const bukzaStartDate = moment(targetDate).startOf('day').toDate().toISOString()
   const availabities = await fetch(`https://app.bukza.com/api/clientReservations/getAvailability/${userId}?t=${new Date().getTime()}`, {
     ...generatePostRequestHeaders(headers),
@@ -47,18 +44,23 @@ const fetchAvailabilities = async ({ targetDate, courts, headers, userId }: {
       }[]
     }[]
   } = await availabities.json();
-  const availableBlocks = resources
-    .map(({ resourceId, days }) => ({
-      resourceId,
-      blocks: _.head(days).levels
-        .filter(({ shares }) => (shares > 0 ))
-        .map(({ startDate, endDate }) => ({
-          startDate: moment(startDate).format('h:mm A'),
-          endDate: moment(endDate).format('h:mm A'),
-        })),
-    }))
-    .filter(({ blocks }) => blocks.length > 0);
-  return availableBlocks;
+
+  // only reformat blocks with shares > 0
+  const filteredBlocks = resources
+    .map(({ resourceId, days }) => (
+      _.head(days).levels
+      .filter(({ shares }) => (shares > 0 ))
+      .map(({ startDate, endDate }) => ({
+        resourceId: String(resourceId),
+        startDate: moment(startDate).format('h:mm A'),
+        endDate: moment(endDate).format('h:mm A'),
+      }))));
+
+  // filter out blocks without any available time slots
+  const availableBlocks = filteredBlocks
+    .filter((blocks) => blocks.length > 0);
+
+  return _.flatten(availableBlocks);
 };
 
 
